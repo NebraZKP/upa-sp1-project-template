@@ -58,7 +58,7 @@ fn main() {
     // Generate the proof.
     let proof = client
         .prove(&pk, stdin)
-        .plonk()
+        .groth16()
         .run()
         .expect("failed to generate proof");
 
