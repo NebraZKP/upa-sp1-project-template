@@ -33,6 +33,7 @@ struct SP1FibonacciProofFixture {
     n: u32,
     vkey: String,
     public_values: String,
+    public_values_digest: String,
     proof: String,
 }
 
@@ -62,11 +63,11 @@ fn main() {
         .run()
         .expect("failed to generate proof");
 
-    create_plonk_fixture(&proof, &vk);
+    create_groth16_fixture(&proof, &vk);
 }
 
 /// Create a fixture for the given proof.
-fn create_plonk_fixture(proof: &SP1ProofWithPublicValues, vk: &SP1VerifyingKey) {
+fn create_groth16_fixture(proof: &SP1ProofWithPublicValues, vk: &SP1VerifyingKey) {
     // Deserialize the public values.
     let bytes = proof.public_values.as_slice();
     let PublicValuesStruct { n, a, b } = PublicValuesStruct::abi_decode(bytes, false).unwrap();
@@ -78,6 +79,7 @@ fn create_plonk_fixture(proof: &SP1ProofWithPublicValues, vk: &SP1VerifyingKey) 
         n,
         vkey: vk.bytes32().to_string(),
         public_values: format!("0x{}", hex::encode(bytes)),
+        public_values_digest: proof.public_values.hash().to_string(),
         proof: format!("0x{}", hex::encode(proof.bytes())),
     };
 
@@ -85,7 +87,11 @@ fn create_plonk_fixture(proof: &SP1ProofWithPublicValues, vk: &SP1VerifyingKey) 
     // program on the given input.
     //
     // Note that the verification key stays the same regardless of the input.
-    println!("Verification Key: {}", fixture.vkey);
+    println!("Program Verification Key: {}", fixture.vkey);
+
+    // The public values digest is the hash of the public values. This is used
+    // as a public input in the SP1Groth16Verifier contract.
+    println!("Public Values Digest: {}", fixture.public_values_digest);
 
     // The public values are the values which are publicly committed to by the zkVM.
     //
