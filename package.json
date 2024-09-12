@@ -1,0 +1,12 @@
+{
+  "name": "upa-sp1-project-template",
+  "version": "1.0.0",
+  "description": "E2E Workflow for Aggregating SP1 Groth16 Proofs with NEBRA UPA",
+  "main": "index.js",
+  "repository": "git@github.com:NebraZKP/upa-sp1-project-template.git",
+  "license": "MIT",
+  "dependencies": {
+    "@nebrazkp/upa": "^1.2.2",
+    "ethers": "^6.13.2"
+  }
+}
