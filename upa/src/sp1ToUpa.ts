@@ -7,8 +7,8 @@ type SP1FibonacciProofFixture = {
   b: number;
   n: number
   vkey: string;
-  public_values: string;
-  public_values_digest: string;
+  publicValues: string;
+  publicValuesDigest: string;
   proof: string;
 }
 
@@ -70,7 +70,7 @@ const main = () => {
 
   // Parse public inputs
   const PROGRAM_VKEY = BigInt(fixture.vkey);
-  const PI_DIGEST = BigInt(fixture.public_values_digest);
+  const PI_DIGEST = BigInt(fixture.publicValuesDigest);
 
   const UPA_INPUTS = [PROGRAM_VKEY, PI_DIGEST];
 
