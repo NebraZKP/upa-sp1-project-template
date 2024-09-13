@@ -146,8 +146,14 @@ pushd _upa_sp1
     fi
 
     # Check that SP1 Groth16 proof has been verified
+    upa compute proof-ref \
+        --submission-file submission.json \
+        --proof-idx 0 \
+        --proof-ref-file sp1_ref.json
+
     upa query is-verified \
-        --proof-file ${SP1_PROOF}
+        --proof-file ${SP1_PROOF} \
+        --proof-ref-file sp1_ref.json
 
     # Check that SP1 Groth16 proof has been verified by UPA
     # via querying Fibonacci contract
@@ -155,7 +161,9 @@ pushd _upa_sp1
 
     PUBLIC_VALUES=`jq -r .publicValues ${UPA_DIR}/fixtures/sp1FibonacciProofFixture.json`
 
-    IS_FIBONACCI=`node ${UPA_DIR}/dist/src/verifyFibonacci.js  ${FIBONACCI_ADDRESS} ${PUBLIC_VALUES} ${USER_KEYFILE} ${RPC_ENDPOINT}`
+    SUBMISSION_FULL_PATH=`realpath submission.json`
+
+    IS_FIBONACCI=`node ${UPA_DIR}/dist/src/verifyFibonacci.js  ${FIBONACCI_ADDRESS} ${PUBLIC_VALUES} ${SUBMISSION_FULL_PATH} ${USER_KEYFILE} ${RPC_ENDPOINT}`
 
     if ! [ "true" == "${IS_FIBONACCI}" ] ; then
         echo "FAILURE: SP1 Groth16 proof not verified by UPA"

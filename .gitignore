@@ -20,3 +20,16 @@ pgo-data.profdata
 
 # Node/Yarn related
 node_modules
+dist
+
+# E2E working directory
+_upa_sp1
+
+# Hardhat
+typechain-types
+Hardhat.*
+artifacts
+cache
+
+# Proof fixtures
+fixtures

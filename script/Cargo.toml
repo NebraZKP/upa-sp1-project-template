@@ -13,6 +13,10 @@ name = "evm"
 path = "src/bin/evm.rs"
 
 [[bin]]
+name = "upa"
+path = "src/bin/upa.rs"
+
+[[bin]]
 name = "vkey"
 path = "src/bin/vkey.rs"
 
