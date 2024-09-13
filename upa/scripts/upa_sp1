@@ -88,22 +88,24 @@ pushd _upa_sp1
     fi
 
     # Test data
-    SP1_VK=${UPA_DIR}/fixtures/upaVk.json
-    # TEST_VK=${UPA_DIR}/circuits/src/tests/data/vk.json
-    # VK_2=${UPA_DIR}/circuits/src/tests/data/vk-2.json
-    # VK_3=${UPA_DIR}/circuits/src/tests/data/vk-3.json
-    # #   series of proofs for vk.json, vk-2.json, vk-3.json
-    # TEST_PROOFS=${UPA_DIR}/circuits/src/tests/data/universal_batch_verifier_8_proofs.json
     SP1_PROOF=${UPA_DIR}/fixtures/upaProofVkInputs.json
-
-    # Register VKs
-    KEYFILE=${KEYFILE} upa registervk ${SP1_VK}
-    # KEYFILE=${KEYFILE} upa registervk ${TEST_VK}
-    # KEYFILE=${KEYFILE} upa registervk ${VK_2}
-    # KEYFILE=${KEYFILE} upa registervk ${VK_3} --wait
+    TEST_PROOF=${UPA_DIR}/test/data/test.proof.json
 
     # Locally verify SP1 Groth16 proof is valid
     upa dev groth16-verify --proof-file ${SP1_PROOF}
+
+    SP1_VK="sp1.vk.json"
+    TEST_VK="test.vk.json"
+    jq -r .vk ${SP1_PROOF} > ${SP1_VK}
+    jq -r .vk ${TEST_PROOF} > ${TEST_VK}
+
+    # Register VKs
+    KEYFILE=${KEYFILE} upa registervk ${SP1_VK}
+    KEYFILE=${KEYFILE} upa registervk ${TEST_VK} --wait
+
+    # Form proofs file for submission to UPA
+    UPA_PROOFS_FILE=upa.proofs.json
+    jq -s '.' ${SP1_PROOF} ${TEST_PROOF} > ${UPA_PROOFS_FILE}
 
     # Deploy UPA  Fibonacci contract
     # 1. Get UpaVerifier address from upa.instance
@@ -123,14 +125,16 @@ pushd _upa_sp1
 
     upa submit-proofs \
            --keyfile ${USER_KEYFILE} \
-           --proofs-file ${SP1_PROOF} \
+           --proofs-file ${UPA_PROOFS_FILE} \
+           --submission-file submission.json \
+           --proof-ids-file proofIds.json \
            --wait
 
     # Give aggregator time to submit batch.
     sleep ${LATENCY}
     sleep ${LATENCY}
 
-    # Check that two submissions have been verified
+    # Check that a submission has been verified
     upa query stats > stats.1
     if ! [ "2"  == "`jq -r .nextSubmissionIdx stats.1`" ] ; then
         echo "FAILURE: nextSubmissionIdx expected to be 2" #
