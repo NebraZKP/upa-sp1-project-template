@@ -107,7 +107,7 @@ fn create_groth16_fixture(proof: &SP1ProofWithPublicValues, vk: &SP1VerifyingKey
     let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../upa/fixtures");
     std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
     std::fs::write(
-        fixture_path.join("fixture.json"),
+        fixture_path.join("sp1FibonacciProofFixture.json"),
         serde_json::to_string_pretty(&fixture).unwrap(),
     )
     .expect("failed to write fixture");
