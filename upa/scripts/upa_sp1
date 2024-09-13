@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+
+set -x
+set -e
+
+# Install dependencies including UPA tooling
+yarn install
+
+# Allow aliases to be expanded in this shell, so that `shell_setup.sh` can
+# create the `upa` command.
+shopt -s expand_aliases
+. scripts/shell_setup.sh
+
+# Include the util functions.
+. scripts/utils.sh
+
+# Build
+yarn build
+
+# Generate Vk and Proof files for SP1 Fibonacci Groth16 Proof
+node dist/src/sp1ToUpa.js
+
+# Verify in groups of this size
+BATCH_SIZE=2
+# Dev aggregator submits batches every $LATENCY seconds
+LATENCY=3
+# For now test assumes batch size of 2 because sample
+# proofs file contains only 4 proofs
+if ! [ "2" == $BATCH_SIZE ] ; then
+    echo "Test currently assumes batch size of 2"
+fi
+
+export UPA_LOG_LEVEL=debug
+
+# 1 - address to fund
+function fund() {
+    bal=`upa dev balance $1`
+    if (( $(echo "${bal} < 100" | bc -l) )) ; then
+        upa dev fund $1 --amount 1.5
+    fi
+}
+
+mkdir -p _upa_sp1
+pushd _upa_sp1
+    stop_hardhat_node
+    start_hardhat_node 10545
+    export RPC_ENDPOINT="http://127.0.0.1:10545/"
+    export KEYFILE_PASSWORD=""
+
+    KEYFILE="deployer.key"
+
+    # Set interval mining mode
+    upa dev interval-mining 500
+
+    # Create and fund a dummy address
+    if ! [ -e ${KEYFILE} ] ; then
+        addr=`upa dev ethkeygen --keyfile ${KEYFILE}`
+    else
+        addr=0x`cat ${KEYFILE} | jq -r .address`
+    fi
+    fund ${addr}
+
+    # Create and fund user address
+    USER_KEYFILE="user.key"
+    if ! [ -e ${USER_KEYFILE} ] ; then
+        upa dev ethkeygen --keyfile ${USER_KEYFILE}
+    fi
+    user_addr=0x`cat ${USER_KEYFILE} | jq -r .address`
+    fund ${user_addr}
+
+    # Deploy using this key
+    upa owner deploy \
+            --keyfile ${KEYFILE} \
+            --verifier ${UPA_DIR}/test/data/test.bin \
+            --use-test-config \
+            --retries 3
+
+    # Check stats and record
+    upa query stats > stats.0
+    if ! [ "1"  == "`jq -r .nextSubmissionIdx stats.0`" ] ; then
+        echo "FAILURE: nextSubmissionIdx expected to be 1"
+        exit 1
+    fi
+    if ! [ "1" == "`jq -r .nextSubmissionIdxToVerify stats.0`" ] ; then
+        echo "FAILURE: nextSubmissionIdxToVerify expected to be 1"
+        echo "Dev aggregator may have missed a partially verified submission"
+        exit 1
+    fi
+
+    # Test data
+    SP1_VK=${UPA_DIR}/fixtures/upaVk.json
+    # TEST_VK=${UPA_DIR}/circuits/src/tests/data/vk.json
+    # VK_2=${UPA_DIR}/circuits/src/tests/data/vk-2.json
+    # VK_3=${UPA_DIR}/circuits/src/tests/data/vk-3.json
+    # #   series of proofs for vk.json, vk-2.json, vk-3.json
+    # TEST_PROOFS=${UPA_DIR}/circuits/src/tests/data/universal_batch_verifier_8_proofs.json
+    SP1_PROOF=${UPA_DIR}/fixtures/upaProofVkInputs.json
+
+    # Register VKs
+    KEYFILE=${KEYFILE} upa registervk ${SP1_VK}
+    # KEYFILE=${KEYFILE} upa registervk ${TEST_VK}
+    # KEYFILE=${KEYFILE} upa registervk ${VK_2}
+    # KEYFILE=${KEYFILE} upa registervk ${VK_3} --wait
+
+    # Locally verify SP1 Groth16 proof is valid
+    upa dev groth16-verify --proof-file ${SP1_PROOF}
+
+    # Deploy UPA  Fibonacci contract
+    # 1. Get UpaVerifier address from upa.instance
+    UPA_VERIFIER_ADDRESS=`jq -r .verifier upa.instance`
+
+    # 2. Program Vkey
+    PROGRAM_VKEY=`jq -r .vkey ${UPA_DIR}/fixtures/sp1FibonacciProofFixture.json`
+
+    # 3. Compute circuitId for SP1_VK
+    SP1_CID=`upa compute circuit-id ${SP1_VK}`
+
+    node ${UPA_DIR}/dist/src/deployFibonacci.js ${UPA_VERIFIER_ADDRESS} ${PROGRAM_VKEY} ${SP1_CID} ${KEYFILE} ${RPC_ENDPOINT} > fibonacci.address
+
+    # Start a dev aggregator
+    start_dev_aggregator $BATCH_SIZE $LATENCY $KEYFILE
+    sleep 5
+
+    upa submit-proofs \
+           --keyfile ${USER_KEYFILE} \
+           --proofs-file ${SP1_PROOF} \
+           --wait
+
+    # Give aggregator time to submit batch.
+    sleep ${LATENCY}
+    sleep ${LATENCY}
+
+    # Check that two submissions have been verified
+    upa query stats > stats.1
+    if ! [ "2"  == "`jq -r .nextSubmissionIdx stats.1`" ] ; then
+        echo "FAILURE: nextSubmissionIdx expected to be 2" #
+        exit 1
+    fi
+    if ! [ "2" == "`jq -r .nextSubmissionIdxToVerify stats.1`" ] ; then
+        echo "FAILURE: nextSubmissionIdxToVerify expected to be 2"
+        exit 1
+    fi
+
+    # Check that SP1 Groth16 proof has been verified
+    upa query is-verified \
+        --proof-file ${SP1_PROOF}
+
+    # Check that SP1 Groth16 proof has been verified by UPA
+    # via querying Fibonacci contract
+    FIBONACCI_ADDRESS=`cat fibonacci.address`
+
+    PUBLIC_VALUES=`jq -r .publicValues ${UPA_DIR}/fixtures/sp1FibonacciProofFixture.json`
+
+    IS_FIBONACCI=`node ${UPA_DIR}/dist/src/verifyFibonacci.js  ${FIBONACCI_ADDRESS} ${PUBLIC_VALUES} ${USER_KEYFILE} ${RPC_ENDPOINT}`
+
+    if ! [ "true" == "${IS_FIBONACCI}" ] ; then
+        echo "FAILURE: SP1 Groth16 proof not verified by UPA"
+        exit 1
+    else
+        echo "SUCCESS: SP1 Groth16 proof verified by UPA"
+    fi
+
+    stop_dev_aggregator
+    stop_hardhat_node
+
+popd # _upa_sp1
+
+set +e
+set +x
+
+echo "========================================"
+echo "====             PASSED             ===="
+echo "========================================"
