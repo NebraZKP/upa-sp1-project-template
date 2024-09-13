@@ -27,7 +27,7 @@ _upa_sp1
 
 # Hardhat
 typechain-types
-Hardhat.*
+Hardhat.log
 artifacts
 cache
 
