@@ -33,7 +33,7 @@ cd script
 cargo run --release -- --prove
 ```
 
-### Generate an EVM-Compatible (PLONK) Proof
+### Generate an EVM-Compatible (GROTH16) Proof
 
 > [!WARNING]
 > You will need at least 128GB RAM to generate the PLONK proof.
@@ -46,32 +46,29 @@ cargo run --release --bin evm
 ```
 
 This command also generates a fixture that can be used to test the verification of SP1 zkVM proofs
-inside Solidity.
+inside Solidity. The fixture is in `upa/fixtures` folder.
 
-### Retrieve the Verification Key
+## UPA Integration
 
-To retrieve your `programVKey` for your on-chain contract, run the following command:
+`cd` into the `upa` directory and run the following commands:
 
-```sh
-cargo run --release --bin vkey
+```bash
+yarn
+yarn build
+./scripts/upa_sp1
 ```
 
-## Using the Prover Network
+Under the hood the `upa_sp1` script:
 
-We highly recommend using the Succinct prover network for any non-trivial programs or benchmarking purposes. For more information, see the [setup guide](https://docs.succinct.xyz/prover-network/setup.html).
+1. Converts the SP1 Groth16 proof into UPA file format.
+2. Deploys UPA Verifier contract to a local hardhat network.
+3. Deploys a Fibonacci contract to a local hardhat network. The Fibonacci contract has an entry point
+`verifyFibonacci` that checks that the public values of the SP1 proof correspond to a Groth16 proof that
+was marked as verified on the UPA Verifier contract. Importantly, note that this function does not do
+the actual verification of the Groth16 proof.
+4. Submits SP1 Fibonacci Groth16 proof to the UPA Verifier contract.
+5. Uses the UPA dev aggregator (a dev tool to mimic actual UPA aggregator) to aggregate the SP1 Groth16 proof
+along with another test Groth16 proof. Submits the aggregated proof on-chain.
+6. Calls the `verifyFibonacci` function on the Fibonacci contract to check that the SP1 Groth16 proof was
+successfully aggregated.
 
-To get started, copy the example environment file:
-
-```sh
-cp .env.example .env
-```
-
-Then, set the `SP1_PROVER` environment variable to `network` and set the `SP1_PRIVATE_KEY`
-environment variable to your whitelisted private key.
-
-For example, to generate an EVM-compatible proof using the prover network, run the following
-command:
-
-```sh
-SP1_PROVER=network SP1_PRIVATE_KEY=... cargo run --release --bin evm
-```
