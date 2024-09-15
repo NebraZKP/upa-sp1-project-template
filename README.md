@@ -38,7 +38,7 @@ cargo run --release -- --prove
 ### Generate an EVM-Compatible (GROTH16) Proof
 
 > [!WARNING]
-> You will need at least 128GB RAM to generate the PLONK proof.
+> You will need at least 128GB RAM to generate the Groth16 proof.
 
 To generate a PLONK proof that is small enough to be verified on-chain and verifiable by the EVM:
 
