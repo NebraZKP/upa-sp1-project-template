@@ -9,6 +9,9 @@ This repo is a NEBRA maintained fork from [sp1-project-template](https://github.
 
 - [Rust](https://rustup.rs/)
 - [SP1](https://succinctlabs.github.io/sp1/getting-started/install.html)
+- [node >= 18](https://github.com/nvm-sh/nvm)
+- [yarn](https://yarnpkg.com/getting-started/install)
+- [docker](https://docs.docker.com/get-docker/)
 
 ## Running the Project
 
@@ -44,7 +47,7 @@ To generate a PLONK proof that is small enough to be verified on-chain and verif
 
 ```sh
 cd script
-cargo run --release --bin evm
+RUST_LOG=info RUST_BACKTRACE=1 cargo run --release --bin evm
 ```
 
 This command also generates a fixture that can be used to test the verification of SP1 zkVM proofs
