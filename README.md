@@ -1,7 +1,9 @@
-# SP1 Project Template
+# UPA-SP1 Project Template
 
 This is a template for creating an end-to-end [SP1](https://github.com/succinctlabs/sp1) project
-that can generate a proof of any RISC-V program.
+that can generate a proof of any RISC-V program and getting the proof verified in NEBRA UPA.
+
+This repo is a NEBRA maintained fork from [sp1-project-template](https://github.com/succinctlabs/sp1-project-template), the credits of all the SP1 related code belongs to the original author.
 
 ## Requirements
 
