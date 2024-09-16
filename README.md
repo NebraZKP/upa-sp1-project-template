@@ -12,6 +12,7 @@ This repo is a NEBRA maintained fork from [sp1-project-template](https://github.
 - [node >= 18](https://github.com/nvm-sh/nvm)
 - [yarn](https://yarnpkg.com/getting-started/install)
 - [docker](https://docs.docker.com/get-docker/)
+- [jq](https://jqlang.github.io/jq/)
 
 ## Running the Project
 
