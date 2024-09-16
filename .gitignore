@@ -17,3 +17,19 @@ pgo-data.profdata
 
 # Env
 .env
+
+# Node/Yarn related
+node_modules
+dist
+
+# E2E working directory
+_upa_sp1
+
+# Hardhat
+typechain-types
+Hardhat.log
+artifacts
+cache
+
+# Proof fixtures
+fixtures
