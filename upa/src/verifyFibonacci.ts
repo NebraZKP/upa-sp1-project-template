@@ -1,7 +1,7 @@
 import { Fibonacci__factory } from "../typechain-types";
 import * as ethers from "ethers";
 import { config } from "@nebrazkp/upa/tool";
-import { OffChainSubmission } from "@nebrazkp/upa/sdk";
+import { SubmissionDescriptor } from "@nebrazkp/upa/sdk";
 import * as fs from "fs";
 
 const verifyFibonacci = async(
@@ -28,7 +28,7 @@ const main = async() => {
   let wallet = await config.loadWallet(keyfile, "", provider);
   wallet = wallet.connect(provider);
 
-  const submission: OffChainSubmission = OffChainSubmission.from_json(fs.readFileSync(submissionFile, "ascii"));
+  const submission: SubmissionDescriptor = SubmissionDescriptor.from_json(fs.readFileSync(submissionFile, "ascii"));
 
   const proofReference = submission.computeProofReference(0);
 
