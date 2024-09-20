@@ -159,7 +159,7 @@ pushd _upa_sp1
     # via querying Fibonacci contract
     FIBONACCI_ADDRESS=`cat fibonacci.address`
 
-    PUBLIC_VALUES=`jq -r .publicValues ${UPA_DIR}/fixtures/sp1FibonacciProofFixture.json`
+    PUBLIC_VALUES=`jq -r .public_values ${UPA_DIR}/fixtures/sp1FibonacciProofFixture.json`
 
     SUBMISSION_FULL_PATH=`realpath submission.json`
 
