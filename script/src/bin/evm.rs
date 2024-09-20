@@ -79,6 +79,7 @@ fn create_plonk_fixture(proof: &SP1ProofWithPublicValues, vk: &SP1VerifyingKey) 
         n,
         vkey: vk.bytes32().to_string(),
         public_values: format!("0x{}", hex::encode(bytes)),
+        public_values_digest: proof.public_values.hash().to_string(),
         proof: format!("0x{}", hex::encode(proof.bytes())),
     };
 
