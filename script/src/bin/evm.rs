@@ -46,7 +46,7 @@ struct SP1FibonacciProofFixture {
     n: u32,
     vkey: String,
     public_values: String,
-    public_values_digest: Vec<u8>,
+    public_values_digest: String,
     proof: String,
 }
 
@@ -97,7 +97,7 @@ fn create_proof_fixture(
         n,
         vkey: vk.bytes32().to_string(),
         public_values: format!("0x{}", hex::encode(bytes)),
-        public_values_digest: proof.public_values.hash(),
+        public_values_digest: String::from_utf8(proof.public_values.hash()).unwrap_or_default(),
         proof: format!("0x{}", hex::encode(proof.bytes())),
     };
 
@@ -140,7 +140,7 @@ fn create_groth16_fixture(proof: &SP1ProofWithPublicValues, vk: &SP1VerifyingKey
         n,
         vkey: vk.bytes32().to_string(),
         public_values: format!("0x{}", hex::encode(bytes)),
-        public_values_digest: proof.public_values.hash(),
+        public_values_digest: String::from_utf8(proof.public_values.hash()).unwrap_or_default(),
         proof: format!("0x{}", hex::encode(proof.bytes())),
     };
 
