@@ -97,7 +97,10 @@ fn create_proof_fixture(
         n,
         vkey: vk.bytes32().to_string(),
         public_values: format!("0x{}", hex::encode(bytes)),
-        public_values_digest: format!("0x{}", hex::encode(proof.public_values.hash())),
+        public_values_digest: format!(
+            "0x{}",
+            hex::encode(proof.public_values.hash_bn254().to_bytes_be())
+        ),
         proof: format!("0x{}", hex::encode(proof.bytes())),
     };
 
@@ -140,7 +143,10 @@ fn create_groth16_fixture(proof: &SP1ProofWithPublicValues, vk: &SP1VerifyingKey
         n,
         vkey: vk.bytes32().to_string(),
         public_values: format!("0x{}", hex::encode(bytes)),
-        public_values_digest: format!("0x{}", hex::encode(proof.public_values.hash())),
+        public_values_digest: format!(
+            "0x{}",
+            hex::encode(proof.public_values.hash_bn254().to_bytes_be())
+        ),
         proof: format!("0x{}", hex::encode(proof.bytes())),
     };
 
