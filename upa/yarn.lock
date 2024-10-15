@@ -688,9 +688,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nebrazkp/upa@npm:^1.2.5":
-  version: 1.2.5
-  resolution: "@nebrazkp/upa@npm:1.2.5"
+"@nebrazkp/upa@npm:^1.2.7":
+  version: 1.2.7
+  resolution: "@nebrazkp/upa@npm:1.2.7"
   dependencies:
     "@ethersproject/keccak256": "npm:^5.7.0"
     "@nomicfoundation/hardhat-ethers": "npm:^3.0.0"
@@ -708,7 +708,7 @@ __metadata:
     winston-loki: "npm:^6.0.8"
   bin:
     upa: dist/src/tool/main.js
-  checksum: a96b5494338de5033cf902528e6c794731e0b711c367e9e2b43745c1192f6f6c3f03753d3b2ebecfd13e2e90aa1717a5b1b99c40d3c82e66bb205f057b4ab1e5
+  checksum: 2aeb0d8ba5c158cc19b66200280938b3900eba78394b8f2fa49db565d8ef404bc4874e5cc4c223000f1cd3c8cdda6c67fa3d195785fa485475fb4e562d79e816
   languageName: node
   linkType: hard
 
@@ -6749,7 +6749,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "upa-sp1-project-template@workspace:."
   dependencies:
-    "@nebrazkp/upa": "npm:^1.2.5"
+    "@nebrazkp/upa": "npm:^1.2.7"
     "@nomicfoundation/hardhat-chai-matchers": "npm:^2.0.0"
     "@nomicfoundation/hardhat-ignition": "npm:^0.15.5"
     "@nomicfoundation/hardhat-ignition-ethers": "npm:^0.15.0"
